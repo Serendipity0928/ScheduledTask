@@ -9,7 +9,7 @@ public enum RailwaySeatType {
     DYNAMIC_SLEEPER("动卧", false, -1),                // 暂不支持
     HARD_SLEEPER("硬卧", false, 28),
     SOFT_SEAT("软座", false, -1),                       // 暂不支持
-    HARD_SEAT("硬座", true, 29),
+    HARD_SEAT("硬座", false, 29),
     NO_SEAT("无座", false, 26);
 
     private String name;
