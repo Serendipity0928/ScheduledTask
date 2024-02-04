@@ -48,7 +48,7 @@ public class RailwayTrainInfo {
                         if(StringUtils.equals("有", curTypeSeatNum)) {
                             seatTypeNumMaps.put(seatType, "余票充足");
                         }
-                        if(StringUtils.isNumeric(curTypeSeatNum) && Integer.parseInt(curTypeSeatNum) < 2) {
+                        if(StringUtils.isNumeric(curTypeSeatNum) && Integer.parseInt(curTypeSeatNum) > 1) {
                             // 过滤小于2的，后续优化
                             seatTypeNumMaps.put(seatType, curTypeSeatNum);
                         }

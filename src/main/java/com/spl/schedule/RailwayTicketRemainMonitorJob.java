@@ -6,7 +6,9 @@ import com.spl.domain.RailwaySeatType;
 import com.spl.domain.RailwayTrainInfo;
 import com.spl.email.EmailUtil;
 import com.spl.network.OkHttpUtil;
+import com.spl.util.FileUtil;
 import com.spl.util.OsascriptUtil;
+import com.spl.util.ThreadUtil;
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -17,19 +19,14 @@ import java.util.*;
 
 public class RailwayTicketRemainMonitorJob {
 
-    private static Long silenceTimeStamp = 0L;
-    private static Long silenceTimeAddMonut = 2*60*1000L;   // 初始化2分钟静默
+    private static Long defaultSilenceTimeAddMonut = 50*1000L;   // 初始化1分钟静默
+    private static final String BACK_ARG_FILE_PATH = "/Users/spl/autoTask/taskBackArg/taskArgs.txt";
 
     private static final SimpleDateFormat systemTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final String leftTicketInfoUrl = "https://kyfw.12306.cn/otn/leftTicket/queryZ?leftTicketDTO.train_date={$Date}&leftTicketDTO.from_station=JNK&leftTicketDTO.to_station=BJP&purpose_codes=ADULT";
 
     // https://blog.csdn.net/feiyang5260/article/details/82255977
     public static void startJob() throws IOException {
-        long currentTime = System.currentTimeMillis();
-        if(currentTime < silenceTimeStamp) {
-            return;  // 静默期不执行
-        }
-
         String cookies = "_jc_save_toDate=2023-10-06; ";
         String monitorDate = "2023-10-06";
 
@@ -54,8 +51,14 @@ public class RailwayTicketRemainMonitorJob {
                 for (Map.Entry<RailwaySeatType, String> entry : seatTypeNumMaps.entrySet()) {
                     RailwaySeatType seatType = entry.getKey();
                     if(seatType.isDefaultFocus()) {
-                        silenceTimeStamp = currentTime + silenceTimeAddMonut;
-                        silenceTimeAddMonut = silenceTimeAddMonut * 2;
+                        Long threadSilenceTime = ThreadUtil.CURRENT_THREAD_LOCAL.get();
+                        threadSilenceTime = threadSilenceTime == null ? defaultSilenceTimeAddMonut:threadSilenceTime;
+
+                        if( threadSilenceTime < 1800000) {
+                            // 30分钟内，设置翻倍静默时间
+                            threadSilenceTime = threadSilenceTime * 2;
+                        }
+                        FileUtil.writeToAppenderFile(BACK_ARG_FILE_PATH, System.currentTimeMillis() + " " + threadSilenceTime);
 
                         // 冲！
                         System.out.println("可售车票信息, 车次：" + trainInfo.getTrainNumber() + ", seatType=" + seatType.getName());
@@ -66,7 +69,7 @@ public class RailwayTicketRemainMonitorJob {
                 }
             }
             System.out.println("没有查询到任何可售车型");
-            silenceTimeAddMonut = 2*60*1000L;  // 无票时重置静默
+            FileUtil.writeToAppenderFile(BACK_ARG_FILE_PATH, System.currentTimeMillis() + " " + defaultSilenceTimeAddMonut);  // 无票时重置静默
         }
     }
 
