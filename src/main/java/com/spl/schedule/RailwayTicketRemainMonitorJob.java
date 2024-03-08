@@ -42,6 +42,10 @@ public class RailwayTicketRemainMonitorJob {
 
             Map<String, String> aliasMap = leftTicketResponse.getData().getMap();
             for (String queryResult : queryResults) {
+                if(!"".equals(queryResult)) {
+                    continue;
+                }
+
                 RailwayTrainInfo trainInfo = RailwayTrainInfo.buildFromLeftTicketDataResult(queryResult, aliasMap);
                 if(trainInfo == null || trainInfo.getSeatTypeNumMaps() == null
                         || trainInfo.getSeatTypeNumMaps().size() == 0) {

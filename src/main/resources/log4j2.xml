@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="error">
+	<!--先定义所有的appender-->
+	<appenders>
+		<!--这个输出控制台的配置-->
+		<Console name="Console" target="SYSTEM_OUT">
+			<!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+			<ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+			<!--这个都知道是输出日志的格式-->
+			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%p] %t %C - %m%n"/>
+		</Console>
+		<!--文件会打印信息 -->
+<!--		<File name="fileLog" fileName="target/pingAnRun.log">-->
+<!--			<PatternLayout pattern="%d{HH:mm:ss.SSS}  %-5level  %class{36}  %L %M ==>  %msg%xEx%n"/>-->
+<!--		</File>-->
+
+		<RollingRandomAccessFile name="file"
+								 fileName="target/pingAn.log"
+								 filePattern="target/pingAn.log.%d{yyyy-MM-dd}.%i">
+			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%p] %t %C - %m%n" />
+			<Policies>
+				<OnStartupTriggeringPolicy />
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="50 MB"/>
+			</Policies>
+			<DefaultRolloverStrategy max="2">
+				<Delete basePath="target" maxDepth="1">
+					<IfFileName glob="pingAn.log.*" />
+					<IfLastModified age="10d" />
+				</Delete>
+			</DefaultRolloverStrategy>
+		</RollingRandomAccessFile>
+
+	</appenders>
+	<!--然后定义logger，只有定义了logger并引入的appender，appender才会生效-->
+	<loggers>
+		<!--建立一个默认的root的logger-->
+		<AsyncRoot level="info" additivity="false" includeLocation="true">
+			<appender-ref ref="Console"/>
+			<appender-ref ref="file"/>
+		</AsyncRoot>
+	</loggers>
+</configuration>
